@@ -23,5 +23,7 @@
     <file src="..\..\src\Aditi.Scheduler\bin\Debug\Aditi.Scheduler.Models.dll" target="lib" />
     <file src="..\..\src\Aditi.Scheduler\bin\Debug\Aditi.Scheduler.Models.pdb" target="lib" />
     <file src="..\..\tools\Install.ps1" target="tools" />
+    <file src="..\..\src\Aditi.Scheduler\*.cs" target="src" />
+    <file src="..\..\src\Aditi.Scheduler.Models\*.cs" target="src" />
   </files>
 </package>

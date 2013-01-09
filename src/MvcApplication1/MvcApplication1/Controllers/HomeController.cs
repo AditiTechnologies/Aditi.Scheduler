@@ -17,10 +17,7 @@ namespace MvcApplication1.Controllers
 
         public async Task<ActionResult> Index()
         {
-            var tasks = new Tasks(uri, tenantId, secretKey);
-
-            var o1 = await tasks.GetTasks();
-            ViewBag.Message = o1.Count();
+            await GetTasks();
 
             var task = new TaskModel
             {
@@ -33,17 +30,25 @@ namespace MvcApplication1.Controllers
                 }
             };
 
-            var response = await tasks.CreateTask(task);
+            //var response = await tasks.CreateTask(task);
 
-            var id = response.Id;
+            //var id = response.Id;
 
-            var o2 = await tasks.GetTasks();
+            //var o2 = await tasks.GetTasks();
 
-            var o3 = await tasks.DeleteTask(id);
+            //var o3 = await tasks.DeleteTask(id);
 
-            var o4 = await tasks.GetTasks();
+            //var o4 = await tasks.GetTasks();
 
             return View();
+        }
+
+        private async Task<IEnumerable<TaskModel>> GetTasks()
+        {
+            var tasks = new Tasks(uri, tenantId, secretKey);
+            var response = await tasks.GetTasks();
+           
+            return response;
         }
 
         public ActionResult About()
