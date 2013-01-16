@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace Aditi.Scheduler.Models
 {
-    public class TaskModel
+    public class ScheduledTask
     {
-        public TaskModel()
+        public ScheduledTask()
         {
             Enabled = true;
             TimeZoneId = TimeZoneInfo.Utc.Id;

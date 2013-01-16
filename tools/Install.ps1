@@ -1,4 +1,4 @@
 param($installPath, $toolsPath, $package, $project)
 
-$readmeFile = "https://github.com/AditiTechnologies/Aditi.SignatureAuth"
+$readmeFile = "http://www.aditicloud.com/gettingstarted"
 $DTE.ItemOperations.Navigate($readmeFile, [EnvDTE.vsNavigateOptions]::vsNavigateOptionsNewWindow)

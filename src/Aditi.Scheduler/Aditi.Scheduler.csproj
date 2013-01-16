@@ -54,7 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tasks.cs" />
+    <Compile Include="ScheduledTasks.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
