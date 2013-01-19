@@ -22,6 +22,13 @@ namespace Aditi.Scheduler
             this._secretKey = secretKey;
         }
 
+        public ScheduledTasks( string tenantId, string secretKey)
+        {
+            this._uri = new Uri("http://scheduler.aditicloud.com/api/task/");
+            this._tenantId = tenantId;
+            this._secretKey = secretKey;
+        }
+
         public async Task<IEnumerable<ScheduledTask>> GetTasks()
         {
             var client = new HttpClient();
