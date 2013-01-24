@@ -14,7 +14,6 @@ namespace Tester_Synch
         private static string secretKey = "nQOSFjqiEwIrymp5g+iaDRx1UmUgM+UMeOP9MkTaw0k=";
         private static Uri uri = new Uri("http://schedulerdev.aditicloud.com/api/task/");
 
-
         static void Main(string[] args)
         {
             var scheduledTasks = new ScheduledTasks(uri, tenantId, secretKey);
@@ -40,8 +39,6 @@ namespace Tester_Synch
             newTask.Name = "new name";
 
             var updTask = scheduledTasks.UpdateTask(newTask);
-
-            getTask = scheduledTasks.GetTask(updTask.Id);
 
             var delTask = scheduledTasks.DeleteTask(newTask.Id);
 

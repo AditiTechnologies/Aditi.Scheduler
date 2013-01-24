@@ -42,3 +42,8 @@ UpgradeLog*.XML
 
 # JustCode folder
 .JustCode/
+
+src/Tester_Sync/
+MvcApplication1/
+
+artifacts

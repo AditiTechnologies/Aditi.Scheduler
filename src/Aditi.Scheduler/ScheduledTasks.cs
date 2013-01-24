@@ -153,7 +153,7 @@ namespace Aditi.Scheduler
             return await response.Content.ReadAsAsync<TaskModel>();
         }
 
-        public TaskModel UpdateTask(TaskModel task)
+        public string UpdateTask(TaskModel task)
         {
             var request = (HttpWebRequest)WebRequest.Create(_uri.ToString() + task.Id.ToString());
             request.Method = "PUT";
@@ -164,7 +164,7 @@ namespace Aditi.Scheduler
 
             string json = JsonConvert.SerializeObject(task);
 
-            string jsonResponse;
+            string result;
 
             using (var streamWriter = new StreamWriter(request.GetRequestStream()))
             {
@@ -175,14 +175,14 @@ namespace Aditi.Scheduler
                 var response = (HttpWebResponse)request.GetResponse();
                 using (var streamReader = new StreamReader(response.GetResponseStream()))
                 {
-                    jsonResponse = streamReader.ReadToEnd();
+                    result = streamReader.ReadToEnd();
                 }
             }
 
-            return JsonConvert.DeserializeObject<TaskModel>(jsonResponse);
+            return result;
         }
 
-        public async Task<TaskModel> UpdateTaskAsync(TaskModel task)
+        public async Task<string> UpdateTaskAsync(TaskModel task)
         {
             var client = new HttpClient();
 
@@ -197,7 +197,7 @@ namespace Aditi.Scheduler
             var content = new ObjectContent<TaskModel>(task, jsonFormatter);
             var response = client.PutAsync(_uri.ToString() + task.Id.ToString(), content).Result;
 
-            return await response.Content.ReadAsAsync<TaskModel>();
+            return await response.Content.ReadAsStringAsync();
         }
 
         public string DeleteTask(Guid taskId)
