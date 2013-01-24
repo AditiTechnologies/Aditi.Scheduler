@@ -77,6 +77,24 @@ namespace Aditi.Scheduler
             return await response.Content.ReadAsAsync<ScheduledTask>();
         }
 
+        public async Task<ScheduledTask> UpdateTask(ScheduledTask updated)
+        {
+            var client = new HttpClient();
+
+            client.DefaultRequestHeaders.Add(
+                "Authorization",
+                new Signature(this._tenantId, this._secretKey).ToString());
+
+            client.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var jsonFormatter = new JsonMediaTypeFormatter();
+            var content = new ObjectContent<ScheduledTask>(updated, jsonFormatter);
+            var response = client.PutAsync(_uri.ToString() + updated.Id.ToString(), content).Result;
+
+            return await response.Content.ReadAsAsync<ScheduledTask>();
+        }
+
         public async Task<string> DeleteTask(Guid taskId)
         {
             var client = new HttpClient();
