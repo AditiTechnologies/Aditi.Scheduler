@@ -4,15 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{21444757-3D70-45FC-A948-279AD079E470}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{CE3B1238-6080-49CF-8D7C-C2B650A92F0E}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Aditi.Scheduler.Models</RootNamespace>
-    <AssemblyName>Aditi.Scheduler.Models</AssemblyName>
+    <RootNamespace>Tester_Synch</RootNamespace>
+    <AssemblyName>Tester_Synch</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -39,9 +41,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="JobType.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TaskModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Aditi.Scheduler.Models\Aditi.Scheduler.Models.csproj">
+      <Project>{21444757-3d70-45fc-a948-279ad079e470}</Project>
+      <Name>Aditi.Scheduler.Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Aditi.Scheduler\Aditi.Scheduler.csproj">
+      <Project>{2730a987-bd8d-435b-a7ed-03db7f54cea4}</Project>
+      <Name>Aditi.Scheduler</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

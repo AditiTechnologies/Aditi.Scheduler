@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace Aditi.Scheduler.Models
 {
-    public class ScheduledTask
+    public class TaskModel
     {
-        public ScheduledTask()
+        public TaskModel()
         {
             Enabled = true;
             TimeZoneId = TimeZoneInfo.Utc.Id;
@@ -15,7 +15,7 @@ namespace Aditi.Scheduler.Models
         public JobType JobType { get; set; }
         public DateTime? Start { get; set; }
         public DateTime? End { get; set; }
-        public int RepeatEveryMins { get; set; }
+        public int? RepeatEveryMins { get; set; }
         public string CronExpression { get; set; }
         public bool Enabled { get; set; }
         public string TimeZoneId { get; set; }

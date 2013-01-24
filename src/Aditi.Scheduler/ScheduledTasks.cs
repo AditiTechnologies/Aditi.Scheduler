@@ -1,11 +1,18 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using Aditi.Scheduler.Models;
 using Aditi.SignatureAuth;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 
 namespace Aditi.Scheduler
 {
@@ -22,14 +29,34 @@ namespace Aditi.Scheduler
             this._secretKey = secretKey;
         }
 
-        public ScheduledTasks( string tenantId, string secretKey)
+        public ScheduledTasks(string tenantId, string secretKey)
         {
             this._uri = new Uri("http://scheduler.aditicloud.com/api/task/");
             this._tenantId = tenantId;
             this._secretKey = secretKey;
         }
 
-        public async Task<IEnumerable<ScheduledTask>> GetTasks()
+        public IEnumerable<TaskModel> GetTasks()
+        {
+            var request = (HttpWebRequest)WebRequest.Create(_uri);
+
+            request.Method = "GET";
+            request.ContentType = "application/json";
+            request.Headers.Add("Authorization",
+                new Signature(this._tenantId, this._secretKey).ToString());
+
+            var response = (HttpWebResponse)request.GetResponse();
+
+            string jsonResponse;
+            using (var sr = new StreamReader(response.GetResponseStream()))
+            {
+                jsonResponse = sr.ReadToEnd();
+            }
+
+            return JsonConvert.DeserializeObject<List<TaskModel>>(jsonResponse);
+        }
+
+        public async Task<IEnumerable<TaskModel>> GetTasksAsync()
         {
             var client = new HttpClient();
 
@@ -41,10 +68,30 @@ namespace Aditi.Scheduler
 
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsAsync<IEnumerable<ScheduledTask>>();
+            return await response.Content.ReadAsAsync<IEnumerable<TaskModel>>();
         }
 
-        public async Task<ScheduledTask> GetTask(Guid taskId)
+        public TaskModel GetTask(Guid taskId)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(_uri + taskId.ToString());
+
+            request.Method = "GET";
+            request.ContentType = "application/json";
+            request.Headers.Add("Authorization",
+                new Signature(this._tenantId, this._secretKey).ToString());
+
+            var response = (HttpWebResponse)request.GetResponse();
+
+            string jsonResponse;
+            using (var sr = new StreamReader(response.GetResponseStream()))
+            {
+                jsonResponse = sr.ReadToEnd();
+            }
+
+            return JsonConvert.DeserializeObject<TaskModel>(jsonResponse);
+        }
+
+        public async Task<TaskModel> GetTaskAsync(Guid taskId)
         {
             var client = new HttpClient();
 
@@ -56,10 +103,39 @@ namespace Aditi.Scheduler
 
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsAsync<ScheduledTask>();
+            return await response.Content.ReadAsAsync<TaskModel>();
         }
 
-        public async Task<ScheduledTask> CreateTask(ScheduledTask task)
+        public TaskModel CreateTask(TaskModel task)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(_uri);
+            request.Method = "POST";
+
+            request.ContentType = "application/json";
+            request.Headers.Add("Authorization",
+                                new Signature(this._tenantId, this._secretKey).ToString());
+
+            string json = JsonConvert.SerializeObject(task);
+
+            string jsonResponse;
+
+            using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+            {
+                streamWriter.Write(json);
+                streamWriter.Flush();
+                streamWriter.Close();
+
+                var response = (HttpWebResponse)request.GetResponse();
+                using (var streamReader = new StreamReader(response.GetResponseStream()))
+                {
+                    jsonResponse = streamReader.ReadToEnd();
+                }
+            }
+
+            return JsonConvert.DeserializeObject<TaskModel>(jsonResponse);
+        }
+
+        public async Task<TaskModel> CreateTaskAsync(TaskModel task)
         {
             var client = new HttpClient();
 
@@ -71,13 +147,42 @@ namespace Aditi.Scheduler
                 new MediaTypeWithQualityHeaderValue("application/json"));
 
             var jsonFormatter = new JsonMediaTypeFormatter();
-            var content = new ObjectContent<ScheduledTask>(task, jsonFormatter);
+            var content = new ObjectContent<TaskModel>(task, jsonFormatter);
             var response = client.PostAsync(_uri, content).Result;
 
-            return await response.Content.ReadAsAsync<ScheduledTask>();
+            return await response.Content.ReadAsAsync<TaskModel>();
         }
 
-        public async Task<ScheduledTask> UpdateTask(ScheduledTask updated)
+        public TaskModel UpdateTask(TaskModel task)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(_uri.ToString() + task.Id.ToString());
+            request.Method = "PUT";
+
+            request.ContentType = "application/json";
+            request.Headers.Add("Authorization",
+                                new Signature(this._tenantId, this._secretKey).ToString());
+
+            string json = JsonConvert.SerializeObject(task);
+
+            string jsonResponse;
+
+            using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+            {
+                streamWriter.Write(json);
+                streamWriter.Flush();
+                streamWriter.Close();
+
+                var response = (HttpWebResponse)request.GetResponse();
+                using (var streamReader = new StreamReader(response.GetResponseStream()))
+                {
+                    jsonResponse = streamReader.ReadToEnd();
+                }
+            }
+
+            return JsonConvert.DeserializeObject<TaskModel>(jsonResponse);
+        }
+
+        public async Task<TaskModel> UpdateTaskAsync(TaskModel task)
         {
             var client = new HttpClient();
 
@@ -89,13 +194,32 @@ namespace Aditi.Scheduler
                 new MediaTypeWithQualityHeaderValue("application/json"));
 
             var jsonFormatter = new JsonMediaTypeFormatter();
-            var content = new ObjectContent<ScheduledTask>(updated, jsonFormatter);
-            var response = client.PutAsync(_uri.ToString() + updated.Id.ToString(), content).Result;
+            var content = new ObjectContent<TaskModel>(task, jsonFormatter);
+            var response = client.PutAsync(_uri.ToString() + task.Id.ToString(), content).Result;
 
-            return await response.Content.ReadAsAsync<ScheduledTask>();
+            return await response.Content.ReadAsAsync<TaskModel>();
         }
 
-        public async Task<string> DeleteTask(Guid taskId)
+        public string DeleteTask(Guid taskId)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(_uri + taskId.ToString());
+
+            request.Method = "DELETE";
+            request.Headers.Add("Authorization",
+                new Signature(this._tenantId, this._secretKey).ToString());
+
+            var response = (HttpWebResponse)request.GetResponse();
+
+            string result;
+            using (var sr = new StreamReader(response.GetResponseStream()))
+            {
+                result = sr.ReadToEnd();
+            }
+
+            return result;
+        }
+
+        public async Task<string> DeleteTaskAsync(Guid taskId)
         {
             var client = new HttpClient();
 
