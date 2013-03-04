@@ -12,6 +12,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{07522B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aditi.Scheduler.Models", "Aditi.Scheduler.Models\Aditi.Scheduler.Models.csproj", "{21444757-3D70-45FC-A948-279AD079E470}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestNugetConsole", "TestNugetConsole\TestNugetConsole.csproj", "{23B173A2-7AEE-4775-BE77-9C91DCBC642A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NugetWPFAsync", "NugetWPFAsync\NugetWPFAsync.csproj", "{2EFC422E-EB3A-4111-A827-40B3EAA40988}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +30,14 @@ Global
 		{21444757-3D70-45FC-A948-279AD079E470}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21444757-3D70-45FC-A948-279AD079E470}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21444757-3D70-45FC-A948-279AD079E470}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23B173A2-7AEE-4775-BE77-9C91DCBC642A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23B173A2-7AEE-4775-BE77-9C91DCBC642A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23B173A2-7AEE-4775-BE77-9C91DCBC642A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23B173A2-7AEE-4775-BE77-9C91DCBC642A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EFC422E-EB3A-4111-A827-40B3EAA40988}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EFC422E-EB3A-4111-A827-40B3EAA40988}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EFC422E-EB3A-4111-A827-40B3EAA40988}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EFC422E-EB3A-4111-A827-40B3EAA40988}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
