@@ -121,6 +121,40 @@ namespace Aditi.Scheduler
             return operationStatus;
         }
 
+        private OperationStatus Poll(string pollingUrl)
+        {
+            int pollCount = 0;
+            OperationStatus operationStatus = null;
+            //start polling
+            while (pollCount != MaxRetryCount)
+            {
+                pollCount++;
+                var pollingWebRequest = CreateWebApiRequest(new Uri(pollingUrl));
+                pollingWebRequest.Method = HttpMethod.Get.Method;
+
+                try
+                {
+                    var polledWebResponse = (HttpWebResponse)pollingWebRequest.GetResponse();
+                    using (var sr = new StreamReader(polledWebResponse.GetResponseStream()))
+                    {
+                        var jsonResponse = sr.ReadToEnd();
+                        operationStatus = JsonConvert.DeserializeObject<OperationStatus>(jsonResponse);
+                        if (operationStatus.Status != StatusCode.Pending)
+                            return operationStatus;
+                    }
+                }
+                catch (WebException we)
+                {
+                    throw CreateSchedulerException(we);
+                }
+            }
+
+            if (operationStatus != null && operationStatus.Status == StatusCode.Pending)
+                operationStatus.Status = StatusCode.TimeOut;
+
+            return operationStatus;
+        }
+
         private HttpWebResponse GetResponse(HttpWebRequest clientRequest)
         {
             HttpWebResponse response;
@@ -201,6 +235,7 @@ namespace Aditi.Scheduler
             request.Method = HttpMethod.Post.Method;
 
             string json = JsonConvert.SerializeObject(task);
+            
             using (var streamWriter = new StreamWriter(request.GetRequestStream()))
             {
                 streamWriter.Write(json);
@@ -366,6 +401,37 @@ namespace Aditi.Scheduler
                 return operationStatus;
             }
         }
-      
+
+        public OperationStatus GetOperationStatus(Guid operationId, bool blocked = false)
+        {
+            OperationStatus operationStatus = null;
+            var statusUrl = this._schedEndpoint + "/api/Status/" + operationId.ToString() + "/";
+
+            var statusWebRequest = CreateWebApiRequest(new Uri(statusUrl));
+            statusWebRequest.Method = HttpMethod.Get.Method;
+            try
+            {
+                var statusWebResponse = (HttpWebResponse)statusWebRequest.GetResponse();
+                using (var sr = new StreamReader(statusWebResponse.GetResponseStream()))
+                {
+                    var jsonResponse = sr.ReadToEnd();
+                    operationStatus = JsonConvert.DeserializeObject<OperationStatus>(jsonResponse);
+                }
+            }
+            catch (WebException we)
+            {
+                throw CreateSchedulerException(we);
+            }
+
+            if (!blocked)
+                return operationStatus;
+            else
+            {
+                if (operationStatus != null && operationStatus.Status == StatusCode.Pending)
+                    operationStatus = Poll(statusUrl);
+                return operationStatus;
+            }
+        }
+
     }
 }

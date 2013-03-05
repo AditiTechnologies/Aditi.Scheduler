@@ -33,104 +33,124 @@ namespace NugetWPFAsync
 
         private async void btnCreate_Click(object sender, RoutedEventArgs e)
         {
-            txtStatus.Clear();
+            List<Guid> opIds;
+            List<OperationStatus> opStatus;
 
-            txtStatus.Text += "task creation started";
-            List<Guid> opIds =  await CreatTasksAsync();
+            //Synchronous creation of tasks
 
-            txtStatus.Text += "Noew getting status for operation ids";
-            List<OperationStatus> opStatus =  await GetOperationStatusAsync(opIds);
-            
-           // txtStatus.Text += "\r\nControl returned to startButton_Click.\r\n";
-            
+            txtStatus.Text += "Starting synchronous task creation.";
+            //start creating tasks and get the list of operation Ids
+            opIds =  CreateTasks();
+            //get operation status for each operationId
+            if (opIds != null && opIds.Count > 0)
+            {
+                opStatus = GetOperationStatus(opIds);
+                if(opStatus != null)
+                    DisplayOperationStatus(opStatus);
+            }
+            txtStatus.Text += "\nEnding synchronous task creation.";
+
+
+            //Asynsynchronous creation of tasks
+            txtStatus.Text += "Starting asynsynchronous task creation.";
+            opIds = await CreatTasksAsync();
+            if (opIds != null && opIds.Count > 0)
+            {
+                opStatus = await GetOperationStatusAsync(opIds);
+                if (opStatus != null)
+                    DisplayOperationStatus(opStatus);
+            }
+            txtStatus.Text += "Ending asyncsynchronous task creation.";
         }
 
-        private async Task<List<Guid>> CreatTasksAsync()
+        private void DisplayOperationStatus(List<OperationStatus> opStatusCol)
+        {
+            foreach (var operationStatus in opStatusCol)
+            {
+                txtStatus.Text += string.Format("\n{0}: {1}", operationStatus.Id, operationStatus.Status);
+            }
+        }
+
+        private List<OperationStatus> GetOperationStatus(List<Guid> opIds)
+        {
+            List<OperationStatus> opStatus = null;
+
+            try
+            {
+                 opStatus =  opIds.Select(t => scheduledTask.GetOperationStatus(t,true)).ToList();
+            }
+            catch (SchedulerException shedExp)
+            {
+              //TODO: Log exception
+            }
+            return opStatus;
+        }
+
+        private List<Guid> CreateTasks()
         {
             List<Guid> operationIds = null;
             Guid currentOperationId;
             var tasks = new TaskModel[5];
+            
+            tasks = GetTasks();
+            operationIds = new List<Guid>();
+
+            foreach (TaskModel t in tasks)
+            {
+                try
+                {
+                    operationIds.Add(scheduledTask.CreateTask(t));
+                }
+                catch (SchedulerModelValidationException me)
+                {
+                    //TODO: Log exception
+                }
+                catch (SchedulerException schedExp)
+                {  
+                    //TODO: Log exception
+                }
+            }
+            return operationIds;
+        }
+
+        private async Task<List<Guid>> CreatTasksAsync()
+        {
+            List<Guid> operationIds;
+            Guid currentOperationId;
+
+            var tasks = new TaskModel[5];
             tasks = GetTasks();
 
-            //Synchronous Create task
-            try
+            operationIds = new List<Guid>();
+            foreach (TaskModel t in tasks)
             {
-                scheduledTask.CreateTask(tasks[2]);
+                try
+                {
+                    currentOperationId = await scheduledTask.CreateTaskAsync(t);
+                    operationIds.Add(currentOperationId);
+                }
+                catch (SchedulerModelValidationException exp)
+                {
+                    //write to log
+                }
+                catch (SchedulerException exp)
+                {
+                    //write to log
+                }
             }
-            catch (SchedulerModelValidationException exp)
-            {
-                throw exp;
-            }
-
-
-            ////asynchronous
-            //if (tasks.Length > 0)
-            //{
-            //    operationIds = new List<Guid>();
-            //    for (int taskCount = 0; taskCount < tasks.Length; taskCount++)
-            //    {
-            //        try
-            //        {
-            //            currentOperationId = await scheduledTask.CreateTaskAsync(tasks[taskCount]);
-            //            operationIds.Add(currentOperationId);
-            //        }
-            //        catch (SchedulerModelValidationException exp)
-            //        {
-            //            //write to log
-            //        }
-            //        catch (SchedulerException exp)
-            //        {
-            //            //write to log
-            //        }
-
-            //    }
-
-            //}
-
-            
-
-           // //1. list of taskModels
-           // //this is contained in tasks
-
-           // //2. Create a query. 
-           // IEnumerable<Task<Guid>> createSchedTasksQuery = from task in tasks
-           //                                                 select scheduledTask.CreateTaskAsync(task);
-
-           // try
-           // {
-           //     //3. Use ToArray to execute the query and start creating tasks.
-           //     Task<Guid>[] createSchedTasks = createSchedTasksQuery.ToArray();
-           //     // You can do other work here before awaiting.
-
-           //     // Await the completion of all the running tasks. 
-           //     operationIds = await Task.WhenAll(createSchedTasks);
-
-           // }
-           // catch (SchedulerException exp)
-           // {
-
-           // }
-
-           // //// The previous line is equivalent to the following two statements. 
-           // //Task<OperationStatus[]> whenAllTask = Task.WhenAll(getOperationStatusTasks);
-           // //OperationStatus[] operationStatus = await whenAllTask; 
-           // txtStatus.Text += "\nGot OperationIDs";
-           //// txtStatus.Text += string.Format("\n{0}\n{1}\n{2}", operationIds[0], operationIds[1], operationIds[2]);
-
             return operationIds;
-
         }
 
         private async Task<List<OperationStatus>> GetOperationStatusAsync(List<Guid> opIds)
         {
             OperationStatus currentStatus;
-            List<OperationStatus> opStatus = new List<OperationStatus>();
+            var opStatus = new List<OperationStatus>();
 
-            for (int operationCount = 0; operationCount < opIds.Count; operationCount++)
+            foreach (Guid t in opIds)
             {
                 try
                 {
-                    currentStatus = await scheduledTask.GetOperationStatusAsync(opIds[operationCount],true);
+                    currentStatus = await scheduledTask.GetOperationStatusAsync(t, true);
                     opStatus.Add(currentStatus);
                 }
                 catch (SchedulerException exp)
@@ -138,36 +158,9 @@ namespace NugetWPFAsync
                     //write log
                 }
             }
-
-
-            ////1. list of operatioIds
-                ////this is contained in opId array
-
-                ////2. Create a query. 
-                //IEnumerable<Task<OperationStatus>> getOperationStatusQuery = from opId in opIds
-                //                                                           select scheduledTask.GetOperationStatusAsync(opId);
-
-                ////3. Use ToArray to execute the query and start creating tasks.
-                //Task<OperationStatus>[] getOperationStatus = getOperationStatusQuery.ToArray();
-
-                //// You can do other work here before awaiting.
-
-                //// Await the completion of all the running tasks. 
-                //opStatus = await Task.WhenAll(getOperationStatus);
-
-                ////// The previous line is equivalent to the following two statements. 
-                ////Task<OperationStatus[]> whenAllTask = Task.WhenAll(getOperationStatusTasks);
-                ////OperationStatus[] operationStatus = await whenAllTask; 
-
-                //for (int startCount = 0; startCount < opIds.Length; startCount++)
-                //{
-                //    txtStatus.Text += string.Format("\n{0}:{1}", opIds[startCount], opStatus[startCount].Status);
-                //}
-
-                return opStatus;
+            return opStatus;
         }
-
-      
+        
         private static TaskModel[] GetTasks()
         {
             var tasks = new TaskModel[5];
