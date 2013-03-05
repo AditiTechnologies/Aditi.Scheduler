@@ -235,15 +235,22 @@ namespace Aditi.Scheduler
             request.Method = HttpMethod.Post.Method;
 
             string json = JsonConvert.SerializeObject(task);
-            
-            using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+
+            try
             {
-                streamWriter.Write(json);
-                streamWriter.Flush();
-                streamWriter.Close();
-                HttpWebResponse response = GetResponse(request);
-                if (response.StatusCode == HttpStatusCode.Accepted)
-                    return GetOperationId(response);
+                using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+                {
+                    streamWriter.Write(json);
+                    streamWriter.Flush();
+                    streamWriter.Close();
+                    HttpWebResponse response = GetResponse(request);
+                    if (response.StatusCode == HttpStatusCode.Accepted)
+                        return GetOperationId(response);
+                }
+            }
+            catch (WebException we)
+            {
+                throw CreateSchedulerException(we);
             }
 
             //TODO: Is there any scenario code block will reach this?
@@ -287,18 +294,26 @@ namespace Aditi.Scheduler
 
             string json = JsonConvert.SerializeObject(task);
 
-            using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+            try
             {
-                streamWriter.Write(json);
-                streamWriter.Flush();
-                streamWriter.Close();
+                using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+                {
+                    streamWriter.Write(json);
+                    streamWriter.Flush();
+                    streamWriter.Close();
 
-                //get response
-                HttpWebResponse response = GetResponse(request);
+                    //get response
+                    HttpWebResponse response = GetResponse(request);
 
-                if (response.StatusCode == HttpStatusCode.Accepted)
-                    return GetOperationId(response);
+                    if (response.StatusCode == HttpStatusCode.Accepted)
+                        return GetOperationId(response);
+                }
             }
+            catch (WebException we)
+            {
+                throw CreateSchedulerException(we);
+            }
+            
 
             //TODO: Is there any scenario code block will reach this?
             return Guid.Empty;
