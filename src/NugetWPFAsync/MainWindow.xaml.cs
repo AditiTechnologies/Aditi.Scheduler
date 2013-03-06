@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -34,33 +35,93 @@ namespace NugetWPFAsync
         private async void btnCreate_Click(object sender, RoutedEventArgs e)
         {
             List<Guid> opIds;
-            List<OperationStatus> opStatus;
+            List<OperationStatus> opStatus = null;
 
+            var tasks = new TaskModel[5];
+            tasks = GetTasks();
             //Synchronous creation of tasks
 
             txtStatus.Text += "Starting synchronous task creation.";
             //start creating tasks and get the list of operation Ids
-            opIds =  CreateTasks();
+            opIds =  new List<Guid>();
+
+            foreach (TaskModel t in tasks)
+            {
+                try
+                {
+                    opIds.Add(scheduledTask.CreateTask(t));
+                }
+                catch (SchedulerModelValidationException me)
+                {
+                    txtStatus.Text += "\n" + me.Message;
+                    //TODO: Log exception
+
+                }
+                catch (SchedulerException schedExp)
+                {
+                    //TODO: Log exception
+                }
+            }
+            txtStatus.Text += "\nGot operationIds, now checking status";
             //get operation status for each operationId
             if (opIds != null && opIds.Count > 0)
             {
-                opStatus = GetOperationStatus(opIds);
-                if(opStatus != null)
+                try
+                {
+                    opStatus = opIds.Select(t => scheduledTask.GetOperationStatus(t, true)).ToList();
+                }
+                catch (SchedulerException shedExp)
+                {
+                    //TODO: Log exception
+                }
+
+                if (opStatus != null && opStatus.Count > 0)
                     DisplayOperationStatus(opStatus);
             }
             txtStatus.Text += "\nEnding synchronous task creation.";
 
-
+            opIds.Clear();
+            
             //Asynsynchronous creation of tasks
-            txtStatus.Text += "Starting asynsynchronous task creation.";
-            opIds = await CreatTasksAsync();
-            if (opIds != null && opIds.Count > 0)
+            txtStatus.Text += "\nStarting asynsynchronous task creation.";
+            //opIds = await CreatTasksAsync();
+            foreach (TaskModel t in tasks)
             {
-                opStatus = await GetOperationStatusAsync(opIds);
-                if (opStatus != null)
+                try
+                {
+                    var currentOperationId = await scheduledTask.CreateTaskAsync(t);
+                    opIds.Add(currentOperationId);
+                }
+                catch (SchedulerModelValidationException me)
+                {
+                    //write to log
+                    txtStatus.Text += "\n" + me.Message;
+                }
+                catch (SchedulerException exp)
+                {
+                    //write to log
+                }
+            }
+            txtStatus.Text += "\nGot operationIds, now checking status";
+            if (opIds.Count > 0)
+            {
+                //opStatus = await GetOperationStatusAsync(opIds);
+                foreach (Guid t in opIds)
+                {
+                    try
+                    {
+                        var currentStatus = await scheduledTask.GetOperationStatusAsync(t, true);
+                        opStatus.Add(currentStatus);
+                    }
+                    catch (SchedulerException exp)
+                    {
+                        //write log
+                    }
+                }
+                if (opStatus.Count > 0)
                     DisplayOperationStatus(opStatus);
             }
-            txtStatus.Text += "Ending asyncsynchronous task creation.";
+            txtStatus.Text += "\nEnding asyncsynchronous task creation.";
         }
 
         private void DisplayOperationStatus(List<OperationStatus> opStatusCol)
@@ -74,7 +135,6 @@ namespace NugetWPFAsync
         private List<OperationStatus> GetOperationStatus(List<Guid> opIds)
         {
             List<OperationStatus> opStatus = null;
-
             try
             {
                  opStatus =  opIds.Select(t => scheduledTask.GetOperationStatus(t,true)).ToList();
@@ -103,7 +163,9 @@ namespace NugetWPFAsync
                 }
                 catch (SchedulerModelValidationException me)
                 {
+                    txtStatus.Text += "\n" + me.Message;
                     //TODO: Log exception
+
                 }
                 catch (SchedulerException schedExp)
                 {  
@@ -128,16 +190,19 @@ namespace NugetWPFAsync
                 {
                     currentOperationId = await scheduledTask.CreateTaskAsync(t);
                     operationIds.Add(currentOperationId);
+
                 }
-                catch (SchedulerModelValidationException exp)
+                catch (SchedulerModelValidationException me)
                 {
                     //write to log
+                    txtStatus.Text += "\n" + me.Message;
                 }
                 catch (SchedulerException exp)
                 {
                     //write to log
                 }
             }
+            
             return operationIds;
         }
 
@@ -158,6 +223,7 @@ namespace NugetWPFAsync
                     //write log
                 }
             }
+          
             return opStatus;
         }
         

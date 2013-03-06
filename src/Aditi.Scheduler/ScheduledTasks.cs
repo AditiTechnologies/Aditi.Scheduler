@@ -17,6 +17,7 @@ namespace Aditi.Scheduler
     {
         public const string Modelstate = "ModelState";
         public const string RequestJsonContentType = "application/json";
+        //TODO: Change this to production URL when deploying? Can this be taken from any configuration file. 
         public const string SchedulerCreatTaskUri = "http://127.0.0.2/api/task/";
     }
 
@@ -278,7 +279,11 @@ namespace Aditi.Scheduler
                 //{"Message":"The request is invalid.","ModelState":{"task.Start":["Time must be in the future"],
                 //"task.End":["Time must be in the future"],"task.CronExpression":["Cron expression is invalid"]}}
                 if (responseMessage.Contains(SchedulerConstants.Modelstate))
-                    throw CreateSchedulerException(responseMessage);
+                { throw CreateSchedulerException(responseMessage);}
+                else
+                {
+                    throw new SchedulerException(responseMessage);
+                }
             }
 
             //TODO: Is there any scenario code block will reach this?
@@ -340,7 +345,11 @@ namespace Aditi.Scheduler
                 //{"Message":"The request is invalid.","ModelState":{"task.Start":["Time must be in the future"],
                 //"task.End":["Time must be in the future"],"task.CronExpression":["Cron expression is invalid"]}}
                 if (responseMessage.Contains(SchedulerConstants.Modelstate))
-                    throw CreateSchedulerException(responseMessage);
+                { throw CreateSchedulerException(responseMessage);}
+                else
+                {
+                    throw new SchedulerException(responseMessage);
+                }
             }
 
             //TODO Is there any scenario code block will reach this?
@@ -375,11 +384,7 @@ namespace Aditi.Scheduler
             {
                 //check for model state errors
                 string responseMessage = await response.Content.ReadAsStringAsync();
-                //Json Message received from server
-                //{"Message":"The request is invalid.","ModelState":{"task.Start":["Time must be in the future"],
-                //"task.End":["Time must be in the future"],"task.CronExpression":["Cron expression is invalid"]}}
-                if (responseMessage.Contains(SchedulerConstants.Modelstate))
-                    throw CreateSchedulerException(responseMessage);
+                throw CreateSchedulerException(responseMessage);
             }
 
             //TODO Is there any scenario code block will reach this?
@@ -417,6 +422,7 @@ namespace Aditi.Scheduler
             }
         }
 
+      
         public OperationStatus GetOperationStatus(Guid operationId, bool blocked = false)
         {
             OperationStatus operationStatus = null;
@@ -447,6 +453,9 @@ namespace Aditi.Scheduler
                 return operationStatus;
             }
         }
+
+
+
 
     }
 }
