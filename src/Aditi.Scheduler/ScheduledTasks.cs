@@ -21,7 +21,11 @@ namespace Aditi.Scheduler
         public const string RequestJsonContentType = "application/json";
         public const string ErrorMessage = "Message";
         //TODO: Change this to production URL when deploying? Can this be taken from any configuration file. 
-        public const string SchedulerTaskUri = "http://127.0.0.2/api/task/";
+        //for local 
+        //public const string SchedulerTaskUri = "http://127.0.0.2/api/task/";
+        //dev test
+        public const string SchedulerTaskUri = "https://apsschedulerdev.cloudapp.net/api/task/";
+
     }
 
     public class ScheduledTasks
