@@ -24,7 +24,7 @@ namespace Aditi.Scheduler
         //for local 
         //public const string SchedulerTaskUri = "http://127.0.0.2/api/task/";
         //dev test
-        public const string SchedulerTaskUri = "https://apsschedulerdev.cloudapp.net/api/task/";
+        public const string SchedulerTaskUri = "http://apsschedulerdev.cloudapp.net/api/task/";
 
     }
 
@@ -81,6 +81,11 @@ namespace Aditi.Scheduler
         private static SchedulerException CreateSchedulerException(string responseMessage)
         {
             return new SchedulerModelValidationException(responseMessage);
+        }
+
+        private static SchedulerException CreateSchedulerException(HttpRequestException re)
+        {
+            return new SchedulerModelValidationException(re.Message,re);
         }
 
         private Guid GetOperationId(HttpWebResponse response)
@@ -278,9 +283,11 @@ namespace Aditi.Scheduler
             var content = new ObjectContent<TaskModel>(task, jsonFormatter);
             var response = client.PostAsync(_uri.ToString() + task.Id.ToString(), content).Result;
 
+           
             if (response.StatusCode == HttpStatusCode.Accepted)
                 return GetOperationId(response);
 
+            
             if (response.StatusCode == HttpStatusCode.BadRequest)
             {
                 //check for model state errors
@@ -435,8 +442,7 @@ namespace Aditi.Scheduler
                 return operationStatus;
             }
         }
-
-
+        
         public OperationStatus GetOperationStatus(Guid operationId, bool blocked = false)
         {
             OperationStatus operationStatus = null;
@@ -479,7 +485,6 @@ namespace Aditi.Scheduler
                 return operationStatus;
             }
         }
-
 
         //public List<WebhookAudit> GetTaskHistory(string taskId)
         //{
@@ -528,8 +533,8 @@ namespace Aditi.Scheduler
 
         public WebhookAuditResult GetTaskHistory(string taskId, string token = null)
         {
-            string historyUrl = SchedulerConstants.SchedulerTaskUri + taskId + "/History/";
             WebhookAuditResult historyResult;
+            string historyUrl = string.Concat(SchedulerConstants.SchedulerTaskUri,taskId,"/History/");
             var historyWebRequest = CreateWebApiRequest(new Uri(historyUrl));
             historyWebRequest.Method = HttpMethod.Get.Method;
 
@@ -548,5 +553,23 @@ namespace Aditi.Scheduler
             }
             return historyResult;
         }
+
+        public async Task<WebhookAuditResult> GetTaskHistoryAsync(string taskId, string token = null)
+        {
+            WebhookAuditResult historyResult;
+            
+            string historyUrl = string.Concat(SchedulerConstants.SchedulerTaskUri, taskId, "/History/");
+            
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add(
+                "Authorization",
+                new Signature(this._tenantId, this._secretKey).ToString());
+            var response = await client.GetAsync(historyUrl);
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsAsync<WebhookAuditResult>();
+        }
+
     }
 }
