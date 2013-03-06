@@ -35,7 +35,7 @@ namespace NugetWPFAsync
         private async void btnCreate_Click(object sender, RoutedEventArgs e)
         {
             List<Guid> opIds;
-            List<OperationStatus> opStatus = null;
+            List<OperationStatus> opStatus;
 
             var tasks = new TaskModel[5];
             tasks = GetTasks();
@@ -44,7 +44,7 @@ namespace NugetWPFAsync
             txtStatus.Text += "Starting synchronous task creation.";
             //start creating tasks and get the list of operation Ids
             opIds =  new List<Guid>();
-
+            opStatus = new List<OperationStatus>();
             foreach (TaskModel t in tasks)
             {
                 try
@@ -53,7 +53,7 @@ namespace NugetWPFAsync
                 }
                 catch (SchedulerModelValidationException me)
                 {
-                    txtStatus.Text += "\n" + me.Message;
+                    txtStatus.Text += "\n" + me.ExceptionMessage;
                     //TODO: Log exception
 
                 }
@@ -64,7 +64,7 @@ namespace NugetWPFAsync
             }
             txtStatus.Text += "\nGot operationIds, now checking status";
             //get operation status for each operationId
-            if (opIds != null && opIds.Count > 0)
+            if (opIds.Count > 0)
             {
                 try
                 {
@@ -75,13 +75,30 @@ namespace NugetWPFAsync
                     //TODO: Log exception
                 }
 
-                if (opStatus != null && opStatus.Count > 0)
+                if (opStatus.Count > 0)
                     DisplayOperationStatus(opStatus);
             }
             txtStatus.Text += "\nEnding synchronous task creation.";
 
-            opIds.Clear();
-            
+            txtStatus.Text += "\n Task deletion will start in 5 sec from now";
+            try
+            {
+                opIds = opStatus.Select(t => scheduledTask.DeleteTask(Guid.Parse(t.Data.ToString()))).ToList();
+            }
+            catch (SchedulerModelValidationException me)
+            {
+                txtStatus.Text += "\n" + me.ExceptionMessage;
+                //TODO: Log exception
+
+            }
+            catch (SchedulerException schedExp)
+            {
+                //TODO: Log exception
+            }
+
+
+
+
             //Asynsynchronous creation of tasks
             txtStatus.Text += "\nStarting asynsynchronous task creation.";
             //opIds = await CreatTasksAsync();
@@ -89,13 +106,13 @@ namespace NugetWPFAsync
             {
                 try
                 {
-                    var currentOperationId = await scheduledTask.CreateTaskAsync(t);
-                    opIds.Add(currentOperationId);
+                    //var currentOperationId = await scheduledTask.CreateTaskAsync(t);
+                    //opIds.Add(currentOperationId);
                 }
                 catch (SchedulerModelValidationException me)
                 {
                     //write to log
-                    txtStatus.Text += "\n" + me.Message;
+                    txtStatus.Text += "\n" + me.ExceptionMessage;
                 }
                 catch (SchedulerException exp)
                 {
@@ -110,8 +127,8 @@ namespace NugetWPFAsync
                 {
                     try
                     {
-                        var currentStatus = await scheduledTask.GetOperationStatusAsync(t, true);
-                        opStatus.Add(currentStatus);
+                        //var currentStatus = await scheduledTask.GetOperationStatusAsync(t, true);
+                       // opStatus.Add(currentStatus);
                     }
                     catch (SchedulerException exp)
                     {
@@ -132,102 +149,7 @@ namespace NugetWPFAsync
             }
         }
 
-        private List<OperationStatus> GetOperationStatus(List<Guid> opIds)
-        {
-            List<OperationStatus> opStatus = null;
-            try
-            {
-                 opStatus =  opIds.Select(t => scheduledTask.GetOperationStatus(t,true)).ToList();
-            }
-            catch (SchedulerException shedExp)
-            {
-              //TODO: Log exception
-            }
-            return opStatus;
-        }
-
-        private List<Guid> CreateTasks()
-        {
-            List<Guid> operationIds = null;
-            Guid currentOperationId;
-            var tasks = new TaskModel[5];
-            
-            tasks = GetTasks();
-            operationIds = new List<Guid>();
-
-            foreach (TaskModel t in tasks)
-            {
-                try
-                {
-                    operationIds.Add(scheduledTask.CreateTask(t));
-                }
-                catch (SchedulerModelValidationException me)
-                {
-                    txtStatus.Text += "\n" + me.Message;
-                    //TODO: Log exception
-
-                }
-                catch (SchedulerException schedExp)
-                {  
-                    //TODO: Log exception
-                }
-            }
-            return operationIds;
-        }
-
-        private async Task<List<Guid>> CreatTasksAsync()
-        {
-            List<Guid> operationIds;
-            Guid currentOperationId;
-
-            var tasks = new TaskModel[5];
-            tasks = GetTasks();
-
-            operationIds = new List<Guid>();
-            foreach (TaskModel t in tasks)
-            {
-                try
-                {
-                    currentOperationId = await scheduledTask.CreateTaskAsync(t);
-                    operationIds.Add(currentOperationId);
-
-                }
-                catch (SchedulerModelValidationException me)
-                {
-                    //write to log
-                    txtStatus.Text += "\n" + me.Message;
-                }
-                catch (SchedulerException exp)
-                {
-                    //write to log
-                }
-            }
-            
-            return operationIds;
-        }
-
-        private async Task<List<OperationStatus>> GetOperationStatusAsync(List<Guid> opIds)
-        {
-            OperationStatus currentStatus;
-            var opStatus = new List<OperationStatus>();
-
-            foreach (Guid t in opIds)
-            {
-                try
-                {
-                    currentStatus = await scheduledTask.GetOperationStatusAsync(t, true);
-                    opStatus.Add(currentStatus);
-                }
-                catch (SchedulerException exp)
-                {
-                    //write log
-                }
-            }
-          
-            return opStatus;
-        }
-        
-        private static TaskModel[] GetTasks()
+       private static TaskModel[] GetTasks()
         {
             var tasks = new TaskModel[5];
 

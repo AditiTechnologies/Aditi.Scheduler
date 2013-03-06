@@ -9,6 +9,7 @@ namespace Aditi.Scheduler
     public  class SchedulerModelValidationException : SchedulerException
     {
         public Dictionary<string, string> ModelValidationErrors { get; private set; }
+        public string ExceptionMessage { get; private set; }
 
         public SchedulerModelValidationException(string message, WebException we)
             : base(message, we)
@@ -16,13 +17,14 @@ namespace Aditi.Scheduler
             object responseData;
             var response = (System.Net.HttpWebResponse)(we.Response);
             if (response == null) return;
+            ExceptionMessage = message;
             using (var sr = new StreamReader(response.GetResponseStream()))
             {
                 responseData = JsonObject.Parse(sr.ReadToEnd());
             }
-            if (responseData != null && ((System.Collections.Generic.Dictionary<string, string>)responseData).ContainsKey(SchedulerConstants.Modelstate))
+            if (responseData != null && ((Dictionary<string, string>)responseData).ContainsKey(SchedulerConstants.Modelstate))
             {
-                ValidationErrors(((System.Collections.Generic.Dictionary<string, string>)responseData)[SchedulerConstants.Modelstate]);
+                ValidationErrors(((Dictionary<string, string>)responseData)[SchedulerConstants.Modelstate]);
             }
         }
 
@@ -32,9 +34,11 @@ namespace Aditi.Scheduler
                 return;
 
             object responseData = JsonObject.Parse(response);
-            if (responseData != null && ((System.Collections.Generic.Dictionary<string, string>)responseData).ContainsKey(SchedulerConstants.Modelstate))
+            ExceptionMessage = ((Dictionary<string, string>)responseData).ContainsKey(SchedulerConstants.ErrorMessage) ? (((Dictionary<string, string>)responseData)[SchedulerConstants.ErrorMessage]) : response;
+
+            if (((Dictionary<string, string>)responseData).ContainsKey(SchedulerConstants.Modelstate))
             {
-                ValidationErrors(((System.Collections.Generic.Dictionary<string, string>)responseData)[SchedulerConstants.Modelstate]);
+                ValidationErrors(((Dictionary<string, string>)responseData)[SchedulerConstants.Modelstate]);
             }
         }
 

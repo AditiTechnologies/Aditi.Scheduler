@@ -39,6 +39,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="WebhookAudit.cs" />
+    <Compile Include="WebhookAuditResult.cs" />
     <Compile Include="JobType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaskModel.cs" />

@@ -5,10 +5,12 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using Aditi.Scheduler.Models;
 using Aditi.SignatureAuth;
 using Newtonsoft.Json;
+using ServiceStack.Text;
 
 
 namespace Aditi.Scheduler
@@ -17,8 +19,9 @@ namespace Aditi.Scheduler
     {
         public const string Modelstate = "ModelState";
         public const string RequestJsonContentType = "application/json";
+        public const string ErrorMessage = "Message";
         //TODO: Change this to production URL when deploying? Can this be taken from any configuration file. 
-        public const string SchedulerCreatTaskUri = "http://127.0.0.2/api/task/";
+        public const string SchedulerTaskUri = "http://127.0.0.2/api/task/";
     }
 
     public class ScheduledTasks
@@ -27,23 +30,24 @@ namespace Aditi.Scheduler
         private readonly string _tenantId;
         private readonly string _secretKey;
         private readonly string _schedEndpoint;
-        private const int MaxRetryCount = 10;
-        
+        private const int MaxRetryCount = 5;
+
         public ScheduledTasks(Uri uri, string tenantId, string secretKey)
         {
             this._uri = uri;
             this._tenantId = tenantId;
             this._secretKey = secretKey;
+            this._schedEndpoint = string.Concat("http://", this._uri.ToString().Split('/')[2]);
         }
 
         public ScheduledTasks(string tenantId, string secretKey)
         {
-            this._uri = new Uri(SchedulerConstants.SchedulerCreatTaskUri);
+            this._uri = new Uri(SchedulerConstants.SchedulerTaskUri);
             this._tenantId = tenantId;
             this._secretKey = secretKey;
             this._schedEndpoint = string.Concat("http://", this._uri.ToString().Split('/')[2]);
         }
-        
+
         private HttpWebRequest CreateWebApiRequest(Uri uri)
         {
             var request = (HttpWebRequest) WebRequest.Create(uri);
@@ -101,7 +105,7 @@ namespace Aditi.Scheduler
 
                 try
                 {
-                    var polledWebResponse = (HttpWebResponse)await pollingWebRequest.GetResponseAsync();
+                    var polledWebResponse = (HttpWebResponse) await pollingWebRequest.GetResponseAsync();
                     using (var sr = new StreamReader(polledWebResponse.GetResponseStream()))
                     {
                         var jsonResponse = sr.ReadToEnd();
@@ -109,6 +113,7 @@ namespace Aditi.Scheduler
                         if (operationStatus.Status != StatusCode.Pending)
                             return operationStatus;
                     }
+                    Thread.Sleep(1000);
                 }
                 catch (WebException we)
                 {
@@ -135,7 +140,7 @@ namespace Aditi.Scheduler
 
                 try
                 {
-                    var polledWebResponse = (HttpWebResponse)pollingWebRequest.GetResponse();
+                    var polledWebResponse = (HttpWebResponse) pollingWebRequest.GetResponse();
                     using (var sr = new StreamReader(polledWebResponse.GetResponseStream()))
                     {
                         var jsonResponse = sr.ReadToEnd();
@@ -143,6 +148,7 @@ namespace Aditi.Scheduler
                         if (operationStatus.Status != StatusCode.Pending)
                             return operationStatus;
                     }
+                    Thread.Sleep(1000);
                 }
                 catch (WebException we)
                 {
@@ -161,7 +167,7 @@ namespace Aditi.Scheduler
             HttpWebResponse response;
             try
             {
-                response = (HttpWebResponse)clientRequest.GetResponse();
+                response = (HttpWebResponse) clientRequest.GetResponse();
             }
             catch (WebException exp)
             {
@@ -266,20 +272,22 @@ namespace Aditi.Scheduler
 
             var jsonFormatter = new JsonMediaTypeFormatter();
             var content = new ObjectContent<TaskModel>(task, jsonFormatter);
-            var response =  client.PostAsync(_uri.ToString() + task.Id.ToString(), content).Result;
-            
+            var response = client.PostAsync(_uri.ToString() + task.Id.ToString(), content).Result;
+
             if (response.StatusCode == HttpStatusCode.Accepted)
                 return GetOperationId(response);
 
             if (response.StatusCode == HttpStatusCode.BadRequest)
             {
                 //check for model state errors
-                string responseMessage =  await response.Content.ReadAsStringAsync();
+                string responseMessage = await response.Content.ReadAsStringAsync();
                 //Json Message received from server
                 //{"Message":"The request is invalid.","ModelState":{"task.Start":["Time must be in the future"],
                 //"task.End":["Time must be in the future"],"task.CronExpression":["Cron expression is invalid"]}}
                 if (responseMessage.Contains(SchedulerConstants.Modelstate))
-                { throw CreateSchedulerException(responseMessage);}
+                {
+                    throw CreateSchedulerException(responseMessage);
+                }
                 else
                 {
                     throw new SchedulerException(responseMessage);
@@ -318,7 +326,7 @@ namespace Aditi.Scheduler
             {
                 throw CreateSchedulerException(we);
             }
-            
+
 
             //TODO: Is there any scenario code block will reach this?
             return Guid.Empty;
@@ -345,7 +353,9 @@ namespace Aditi.Scheduler
                 //{"Message":"The request is invalid.","ModelState":{"task.Start":["Time must be in the future"],
                 //"task.End":["Time must be in the future"],"task.CronExpression":["Cron expression is invalid"]}}
                 if (responseMessage.Contains(SchedulerConstants.Modelstate))
-                { throw CreateSchedulerException(responseMessage);}
+                {
+                    throw CreateSchedulerException(responseMessage);
+                }
                 else
                 {
                     throw new SchedulerException(responseMessage);
@@ -402,8 +412,8 @@ namespace Aditi.Scheduler
             {
                 var statusWebResponse = (HttpWebResponse) await statusWebRequest.GetResponseAsync();
                 using (var sr = new StreamReader(statusWebResponse.GetResponseStream()))
-                { 
-                    var jsonResponse =  await sr.ReadToEndAsync();
+                {
+                    var jsonResponse = await sr.ReadToEndAsync();
                     operationStatus = JsonConvert.DeserializeObject<OperationStatus>(jsonResponse);
                 }
             }
@@ -422,7 +432,7 @@ namespace Aditi.Scheduler
             }
         }
 
-      
+
         public OperationStatus GetOperationStatus(Guid operationId, bool blocked = false)
         {
             OperationStatus operationStatus = null;
@@ -432,7 +442,7 @@ namespace Aditi.Scheduler
             statusWebRequest.Method = HttpMethod.Get.Method;
             try
             {
-                var statusWebResponse = (HttpWebResponse)statusWebRequest.GetResponse();
+                var statusWebResponse = (HttpWebResponse) statusWebRequest.GetResponse();
                 using (var sr = new StreamReader(statusWebResponse.GetResponseStream()))
                 {
                     var jsonResponse = sr.ReadToEnd();
@@ -445,17 +455,94 @@ namespace Aditi.Scheduler
             }
 
             if (!blocked)
+            {
+                if (operationStatus.Status == StatusCode.Success)
+                {
+                    operationStatus.Data =
+                        JsonConvert.DeserializeObject<Dictionary<string, object>>(operationStatus.Data.ToString());
+                }
                 return operationStatus;
+            }
             else
             {
-                if (operationStatus != null && operationStatus.Status == StatusCode.Pending)
+                if (operationStatus.Status == StatusCode.Pending)
                     operationStatus = Poll(statusUrl);
+                if (operationStatus.Status == StatusCode.Success)
+                {
+                    operationStatus.Data =
+                        JsonConvert.DeserializeObject<Dictionary<string, object>>(operationStatus.Data.ToString());
+                }
                 return operationStatus;
             }
         }
 
 
+        //public List<WebhookAudit> GetTaskHistory(string taskId)
+        //{
+        //    string historyUrl = SchedulerConstants.SchedulerTaskUri + taskId + "/History/";
+        //    WebhookAuditResult historyResult;
+        //    var historyWebRequest = CreateWebApiRequest(new Uri(historyUrl));
+        //    historyWebRequest.Method = HttpMethod.Get.Method;
 
+        //    try
+        //    {
+        //        var historyWebResponse = (HttpWebResponse)historyWebRequest.GetResponse();
+        //        using (var sr = new StreamReader(historyWebResponse.GetResponseStream()))
+        //        {
+        //            var jsonResponse = sr.ReadToEnd();
+        //            historyResult = JsonConvert.DeserializeObject<WebhookAuditResult>(jsonResponse);
+        //            while (historyResult.HasMore)
+        //            {
+        //                var nextHistoryUrl = historyUrl + "?token=" + System.Web.HttpUtility.UrlEncode(historyResult.NextToken);
+        //                historyWebRequest = CreateWebApiRequest(new Uri(nextHistoryUrl));
+        //                historyWebRequest.Method = HttpMethod.Get.Method;
+        //                try
+        //                {
+        //                    var nextHistoryWebResponse = (HttpWebResponse)historyWebRequest.GetResponse();
+        //                    using (var reader = new StreamReader(nextHistoryWebResponse.GetResponseStream()))
+        //                    {
+        //                        var nextJsonResponse = reader.ReadToEnd();
+        //                        var nextHistoryResult = JsonConvert.DeserializeObject<WebhookAuditResult>(nextJsonResponse);
+        //                        historyResult.HasMore = nextHistoryResult.HasMore;
+        //                        historyResult.NextToken = nextHistoryResult.NextToken;
+        //                        historyResult.Audits.AddRange(nextHistoryResult.Audits);
+        //                    }
+        //                }
+        //                catch (WebException webExp)
+        //                {
+        //                    throw CreateSchedulerException(webExp);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (WebException webExp)
+        //    {
+        //        throw CreateSchedulerException(webExp);
+        //    }
+        //    return historyResult.Audits;
+        //}
 
+        public WebhookAuditResult GetTaskHistory(string taskId, string token = null)
+        {
+            string historyUrl = SchedulerConstants.SchedulerTaskUri + taskId + "/History/";
+            WebhookAuditResult historyResult;
+            var historyWebRequest = CreateWebApiRequest(new Uri(historyUrl));
+            historyWebRequest.Method = HttpMethod.Get.Method;
+
+            try
+            {
+                var historyWebResponse = (HttpWebResponse)historyWebRequest.GetResponse();
+                using (var sr = new StreamReader(historyWebResponse.GetResponseStream()))
+                {
+                    var jsonResponse = sr.ReadToEnd();
+                    historyResult = JsonConvert.DeserializeObject<WebhookAuditResult>(jsonResponse);
+                }
+            }
+            catch (WebException webExp)
+            {
+                throw CreateSchedulerException(webExp);
+            }
+            return historyResult;
+        }
     }
 }
