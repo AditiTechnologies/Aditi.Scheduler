@@ -23,6 +23,7 @@ namespace Aditi.Scheduler
         //TODO: Change this to production URL when deploying? Can this be taken from any configuration file. 
         //for local 
         //public const string SchedulerTaskUri = "http://127.0.0.2/api/task/";
+
         //dev test
         public const string SchedulerTaskUri = "http://apsschedulerdev.cloudapp.net/api/task/";
 
@@ -83,11 +84,7 @@ namespace Aditi.Scheduler
             return new SchedulerModelValidationException(responseMessage);
         }
 
-        private static SchedulerException CreateSchedulerException(HttpRequestException re)
-        {
-            return new SchedulerModelValidationException(re.Message,re);
-        }
-
+       
         private Guid GetOperationId(HttpWebResponse response)
         {
             string operationId = response.Headers["Location"].Split('/')[3];
