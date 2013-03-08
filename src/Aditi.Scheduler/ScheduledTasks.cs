@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Cache;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
@@ -59,7 +60,8 @@ namespace Aditi.Scheduler
             request.ContentType = SchedulerConstants.RequestJsonContentType;
             request.Headers.Add("Authorization",
                                 new Signature(this._tenantId, this._secretKey).ToString());
-
+            HttpRequestCachePolicy noCachePolicy = new HttpRequestCachePolicy(HttpRequestCacheLevel.NoCacheNoStore);
+            request.CachePolicy = noCachePolicy;
             return request;
         }
 
@@ -430,14 +432,15 @@ namespace Aditi.Scheduler
                 CreateSchedulerException(we);
             }
 
-            if (!blocked)
-                return operationStatus;
-            else
+            if (operationStatus != null && operationStatus.Status == StatusCode.Pending)
             {
-                if (operationStatus != null && operationStatus.Status == StatusCode.Pending)
+                if (blocked)
                     operationStatus = await PollAsync(statusUrl);
-                return operationStatus;
             }
+            if (operationStatus != null  && operationStatus.Data != null)
+                operationStatus.Data = JsonObject.Parse(operationStatus.Data.ToString());
+
+            return operationStatus;
         }
         
         public OperationStatus GetOperationStatus(Guid operationId, bool blocked = false)
@@ -449,7 +452,7 @@ namespace Aditi.Scheduler
             statusWebRequest.Method = HttpMethod.Get.Method;
             try
             {
-                var statusWebResponse = (HttpWebResponse) statusWebRequest.GetResponse();
+                 var statusWebResponse = (HttpWebResponse) statusWebRequest.GetResponse();
                 using (var sr = new StreamReader(statusWebResponse.GetResponseStream()))
                 {
                     var jsonResponse = sr.ReadToEnd();
@@ -460,74 +463,18 @@ namespace Aditi.Scheduler
             {
                 throw CreateSchedulerException(we);
             }
-
-            if (!blocked)
+            if (operationStatus != null && operationStatus.Status == StatusCode.Pending)
             {
-                if (operationStatus.Status == StatusCode.Success)
-                {
-                    operationStatus.Data =
-                        JsonConvert.DeserializeObject<Dictionary<string, object>>(operationStatus.Data.ToString());
-                }
-                return operationStatus;
-            }
-            else
-            {
-                if (operationStatus.Status == StatusCode.Pending)
+                if (blocked)
                     operationStatus = Poll(statusUrl);
-                if (operationStatus.Status == StatusCode.Success)
-                {
-                    operationStatus.Data =
-                        JsonConvert.DeserializeObject<Dictionary<string, object>>(operationStatus.Data.ToString());
-                }
-                return operationStatus;
             }
+           
+            if(operationStatus != null && (operationStatus.Status == StatusCode.Success || operationStatus.Status == StatusCode.Error) )
+                operationStatus.Data = JsonConvert.DeserializeObject<Dictionary<string, object>>(operationStatus.Data.ToString());
+
+            return operationStatus;
         }
-
-        //public List<WebhookAudit> GetTaskHistory(string taskId)
-        //{
-        //    string historyUrl = SchedulerConstants.SchedulerTaskUri + taskId + "/History/";
-        //    WebhookAuditResult historyResult;
-        //    var historyWebRequest = CreateWebApiRequest(new Uri(historyUrl));
-        //    historyWebRequest.Method = HttpMethod.Get.Method;
-
-        //    try
-        //    {
-        //        var historyWebResponse = (HttpWebResponse)historyWebRequest.GetResponse();
-        //        using (var sr = new StreamReader(historyWebResponse.GetResponseStream()))
-        //        {
-        //            var jsonResponse = sr.ReadToEnd();
-        //            historyResult = JsonConvert.DeserializeObject<WebhookAuditResult>(jsonResponse);
-        //            while (historyResult.HasMore)
-        //            {
-        //                var nextHistoryUrl = historyUrl + "?token=" + System.Web.HttpUtility.UrlEncode(historyResult.NextToken);
-        //                historyWebRequest = CreateWebApiRequest(new Uri(nextHistoryUrl));
-        //                historyWebRequest.Method = HttpMethod.Get.Method;
-        //                try
-        //                {
-        //                    var nextHistoryWebResponse = (HttpWebResponse)historyWebRequest.GetResponse();
-        //                    using (var reader = new StreamReader(nextHistoryWebResponse.GetResponseStream()))
-        //                    {
-        //                        var nextJsonResponse = reader.ReadToEnd();
-        //                        var nextHistoryResult = JsonConvert.DeserializeObject<WebhookAuditResult>(nextJsonResponse);
-        //                        historyResult.HasMore = nextHistoryResult.HasMore;
-        //                        historyResult.NextToken = nextHistoryResult.NextToken;
-        //                        historyResult.Audits.AddRange(nextHistoryResult.Audits);
-        //                    }
-        //                }
-        //                catch (WebException webExp)
-        //                {
-        //                    throw CreateSchedulerException(webExp);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (WebException webExp)
-        //    {
-        //        throw CreateSchedulerException(webExp);
-        //    }
-        //    return historyResult.Audits;
-        //}
-
+      
         public WebhookAuditResult GetTaskHistory(string taskId, string token = null)
         {
             WebhookAuditResult historyResult;

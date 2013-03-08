@@ -30,12 +30,12 @@ namespace NugetWPFAsync
             InitializeComponent();
 
             //local 
-            //scheduledTask = new ScheduledTasks("43336f8e-fa22-4251-bd49-447eeb10f5ab",
-                                  //                       "/HUccm4Bxnsy9UkYIVxijVJ8qjnk1vQeZ0FFT+/uKyE=");
+            //scheduledTask = new ScheduledTasks("d8728cab-45da-4bad-849d-13c904450f5c","p8HxFcp1VeojgOx9p5RLBv6weZFLb/rO4DNKaJMHUqs=");
            
-            //dev test environment
+            //dev test environment 
+            //Do not change this else the system will not identify you.
             scheduledTask = new ScheduledTasks("e848b001-f421-4108-bc15-69870b058e9b",
-                                                         "jFAN3NWyq2c/rGZYAxd8tjARWDQpyK7w+OFPHsg6b9Y=");
+                                                      "jFAN3NWyq2c/rGZYAxd8tjARWDQpyK7w+OFPHsg6b9Y=");
 
         }
 
@@ -134,7 +134,8 @@ namespace NugetWPFAsync
         {
             foreach (var operationStatus in opStatusCol)
             {
-                txtStatus.Text += string.Format("\n{0}: {1}", operationStatus.Id, operationStatus.Status);
+             
+                txtStatus.Text += string.Format("\n{0}: {1}", operationStatus.Id, operationStatus.Status) ;
             }
         }
 
