@@ -14,7 +14,7 @@
     <copyright>Copyright 2013</copyright>
     <tags>aditi scheduler cron</tags>
     <dependencies>
-      <dependency id="Aditi.SignatureAuth" version="0.0.1.3" />
+      <dependency id="Aditi.SignatureAuth" version="0.0.1.11" />
       <dependency id="Microsoft.AspNet.WebApi.Client" version="4.0.20710.0" />
       <dependency id="ServiceStack.Text" version="3.9.37.0" />
     </dependencies>
