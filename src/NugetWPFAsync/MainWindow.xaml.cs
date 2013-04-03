@@ -34,8 +34,8 @@ namespace NugetWPFAsync
            
             //dev test environment 
             //Do not change this else the system will not identify you.
-            scheduledTask = new ScheduledTasks("e848b001-f421-4108-bc15-69870b058e9b",
-                                                      "jFAN3NWyq2c/rGZYAxd8tjARWDQpyK7w+OFPHsg6b9Y=");
+            scheduledTask = new ScheduledTasks("7c433c07-b9b9-4e20-8f70-9092328aacd2",
+                                                      "1b9j/3WkdFqF8KOehoW4jJRLGWdjqSTpXqasoAGB8II=");
 
         }
 

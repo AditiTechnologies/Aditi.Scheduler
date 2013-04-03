@@ -8,6 +8,7 @@ using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Aditi.Scheduler.Models;
 using Aditi.SignatureAuth;
 using Newtonsoft.Json;
@@ -23,10 +24,16 @@ namespace Aditi.Scheduler
         public const string ErrorMessage = "Message";
         //TODO: Change this to production URL when deploying? Can this be taken from any configuration file. 
         //for local 
-        //public const string SchedulerTaskUri = "http://127.0.0.2/api/task/";
-
+#if !(DEBUG_BUILD || RELEASE_BUILD)
+        public const string SchedulerTaskUri = "http://127.0.0.2/api/task/";
+#endif
         //dev test
-        public const string SchedulerTaskUri = "http://apsschedulerdev.cloudapp.net/api/task/";
+#if DEBUG_BUILD 
+        public const string SchedulerTaskUri = "https://schedulerdev.aditicloud.com/";
+#endif
+#if RELEASE_BUILD
+        public const string SchedulerTaskUri = "https://scheduler.aditicloud.com/";
+#endif
 
     }
 
@@ -35,7 +42,7 @@ namespace Aditi.Scheduler
         private readonly Uri _uri;
         private readonly string _tenantId;
         private readonly string _secretKey;
-        private readonly string _schedEndpoint;
+        
         private const int MaxRetryCount = 5;
 
         public ScheduledTasks(Uri uri, string tenantId, string secretKey)
@@ -43,7 +50,7 @@ namespace Aditi.Scheduler
             this._uri = uri;
             this._tenantId = tenantId;
             this._secretKey = secretKey;
-            this._schedEndpoint = string.Concat("http://", this._uri.ToString().Split('/')[2]);
+        
         }
 
         public ScheduledTasks(string tenantId, string secretKey)
@@ -51,12 +58,12 @@ namespace Aditi.Scheduler
             this._uri = new Uri(SchedulerConstants.SchedulerTaskUri);
             this._tenantId = tenantId;
             this._secretKey = secretKey;
-            this._schedEndpoint = string.Concat("http://", this._uri.ToString().Split('/')[2]);
+        
         }
 
-        private HttpWebRequest CreateWebApiRequest(Uri uri)
+        private HttpWebRequest CreateWebApiRequest(String relativeUri)
         {
-            var request = (HttpWebRequest) WebRequest.Create(uri);
+            var request = (HttpWebRequest)WebRequest.Create(new Uri(_uri, relativeUri));
             request.ContentType = SchedulerConstants.RequestJsonContentType;
             request.Headers.Add("Authorization",
                                 new Signature(this._tenantId, this._secretKey).ToString());
@@ -108,7 +115,7 @@ namespace Aditi.Scheduler
             {
                 pollCount++;
 
-                var pollingWebRequest = CreateWebApiRequest(new Uri(pollingUrl));
+                var pollingWebRequest = CreateWebApiRequest(pollingUrl);
                 pollingWebRequest.Method = HttpMethod.Get.Method;
 
                 try
@@ -143,7 +150,7 @@ namespace Aditi.Scheduler
             while (pollCount != MaxRetryCount)
             {
                 pollCount++;
-                var pollingWebRequest = CreateWebApiRequest(new Uri(pollingUrl));
+                var pollingWebRequest = CreateWebApiRequest(pollingUrl);
                 pollingWebRequest.Method = HttpMethod.Get.Method;
 
                 try
@@ -186,7 +193,7 @@ namespace Aditi.Scheduler
 
         public IEnumerable<TaskModel> GetTasks()
         {
-            var request = CreateWebApiRequest(_uri);
+            var request = CreateWebApiRequest("");
             request.Method = "GET";
 
             var response = (HttpWebResponse) request.GetResponse();
@@ -217,7 +224,7 @@ namespace Aditi.Scheduler
 
         public TaskModel GetTask(Guid taskId)
         {
-            var request = CreateWebApiRequest(new Uri(_uri + taskId.ToString()));
+            var request = CreateWebApiRequest("/api/task/" + taskId.ToString());
             request.Method = HttpMethod.Get.Method;
 
             var response = (HttpWebResponse) request.GetResponse();
@@ -246,7 +253,7 @@ namespace Aditi.Scheduler
         /// <exception cref="Aditi.Scheduler.SchedulerException"></exception>
         public Guid CreateTask(TaskModel task)
         {
-            var request = CreateWebApiRequest(_uri);
+            var request = CreateWebApiRequest("/api/task");
             request.Method = HttpMethod.Post.Method;
 
             string json = JsonConvert.SerializeObject(task);
@@ -312,7 +319,7 @@ namespace Aditi.Scheduler
         /// <exception cref="Aditi.Scheduler.SchedulerException"></exception>
         public Guid UpdateTask(TaskModel task)
         {
-            var request = CreateWebApiRequest(new Uri(_uri.ToString() + task.Id.ToString()));
+            var request = CreateWebApiRequest("/api/task/" + task.Id.ToString());
             request.Method = HttpMethod.Put.Method;
 
             string json = JsonConvert.SerializeObject(task);
@@ -379,7 +386,7 @@ namespace Aditi.Scheduler
         /// <exception cref="Aditi.Scheduler.SchedulerException"></exception>
         public Guid DeleteTask(Guid taskId)
         {
-            var request = CreateWebApiRequest(new Uri(_uri + taskId.ToString()));
+            var request = CreateWebApiRequest("/api/task" + taskId.ToString("N"));
             request.Method = HttpMethod.Delete.Method;
 
             HttpWebResponse response = GetResponse(request);
@@ -414,9 +421,9 @@ namespace Aditi.Scheduler
         public async Task<OperationStatus> GetOperationStatusAsync(Guid operationId, bool blocked = false)
         {
             OperationStatus operationStatus = null;
-            var statusUrl = this._schedEndpoint + "/api/Status/" + operationId.ToString();
+            var statusUrl = "/api/Status/" + operationId.ToString();
 
-            var statusWebRequest = CreateWebApiRequest(new Uri(statusUrl));
+            var statusWebRequest = CreateWebApiRequest(statusUrl);
             statusWebRequest.Method = HttpMethod.Get.Method;
             try
             {
@@ -446,9 +453,9 @@ namespace Aditi.Scheduler
         public OperationStatus GetOperationStatus(Guid operationId, bool blocked = false)
         {
             OperationStatus operationStatus = null;
-            var statusUrl = this._schedEndpoint + "/api/Status/" + operationId.ToString() + "/";
+            var statusUrl = "/api/Status/" + operationId.ToString();
 
-            var statusWebRequest = CreateWebApiRequest(new Uri(statusUrl));
+            var statusWebRequest = CreateWebApiRequest(statusUrl);
             statusWebRequest.Method = HttpMethod.Get.Method;
             try
             {
@@ -475,11 +482,11 @@ namespace Aditi.Scheduler
             return operationStatus;
         }
       
-        public WebhookAuditResult GetTaskHistory(string taskId, string token = null)
+        public WebhookAuditResult GetTaskHistory(Guid taskId, string token = null)
         {
             WebhookAuditResult historyResult;
-            string historyUrl = string.Concat(SchedulerConstants.SchedulerTaskUri,taskId,"/History/");
-            var historyWebRequest = CreateWebApiRequest(new Uri(historyUrl));
+            string historyUrl = "/api/task/" + taskId.ToString() + "/History/";
+            var historyWebRequest = CreateWebApiRequest(historyUrl);
             historyWebRequest.Method = HttpMethod.Get.Method;
 
             try
