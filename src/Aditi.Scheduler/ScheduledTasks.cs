@@ -196,15 +196,21 @@ namespace Aditi.Scheduler
             var request = CreateWebApiRequest("/api/task");
             request.Method = "GET";
 
-            var response = (HttpWebResponse) request.GetResponse();
-
-            string jsonResponse;
-            using (var sr = new StreamReader(response.GetResponseStream()))
+            try
             {
-                jsonResponse = sr.ReadToEnd();
-            }
+                var response = (HttpWebResponse) request.GetResponse();
+                string jsonResponse;
+                using (var sr = new StreamReader(response.GetResponseStream()))
+                {
+                    jsonResponse = sr.ReadToEnd();
+                }
 
-            return JsonConvert.DeserializeObject<List<TaskModel>>(jsonResponse);
+                return JsonConvert.DeserializeObject<List<TaskModel>>(jsonResponse);
+            }
+            catch (WebException we)
+            {
+                throw CreateSchedulerException(we);
+            }
         }
 
         public async Task<IEnumerable<TaskModel>> GetTasksAsync()
