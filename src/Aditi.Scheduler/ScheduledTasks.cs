@@ -25,7 +25,7 @@ namespace Aditi.Scheduler
         //TODO: Change this to production URL when deploying? Can this be taken from any configuration file. 
         //for local 
 #if !(DEBUG_BUILD || RELEASE_BUILD)
-        public const string SchedulerTaskUri = "http://127.0.0.2/api/task/";
+        public const string SchedulerTaskUri = "http://127.0.0.2/";
 #endif
         //dev test
 #if DEBUG_BUILD 
