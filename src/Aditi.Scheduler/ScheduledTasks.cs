@@ -193,7 +193,7 @@ namespace Aditi.Scheduler
 
         public IEnumerable<TaskModel> GetTasks()
         {
-            var request = CreateWebApiRequest("");
+            var request = CreateWebApiRequest("/api/task");
             request.Method = "GET";
 
             var response = (HttpWebResponse) request.GetResponse();
