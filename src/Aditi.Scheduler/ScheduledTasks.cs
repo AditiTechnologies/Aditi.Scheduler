@@ -22,6 +22,10 @@ namespace Aditi.Scheduler
         public const string Modelstate = "ModelState";
         public const string RequestJsonContentType = "application/json";
         public const string ErrorMessage = "Message";
+        public const string TaskRelativePath = "/api/task/";
+        public const string StatusRelativePath = "/api/Status/";
+        public const string HistoryRelativePath = "/History/";
+
         //TODO: Change this to production URL when deploying? Can this be taken from any configuration file. 
         //for local 
 #if !(DEBUG_BUILD || RELEASE_BUILD)
@@ -193,7 +197,7 @@ namespace Aditi.Scheduler
 
         public IEnumerable<TaskModel> GetTasks()
         {
-            var request = CreateWebApiRequest("/api/task");
+            var request = CreateWebApiRequest(SchedulerConstants.TaskRelativePath);
             request.Method = "GET";
 
             try
@@ -230,7 +234,7 @@ namespace Aditi.Scheduler
 
         public TaskModel GetTask(Guid taskId)
         {
-            var request = CreateWebApiRequest("/api/task/" + taskId.ToString());
+            var request = CreateWebApiRequest(SchedulerConstants.TaskRelativePath + taskId.ToString());
             request.Method = HttpMethod.Get.Method;
 
             var response = (HttpWebResponse) request.GetResponse();
@@ -259,7 +263,7 @@ namespace Aditi.Scheduler
         /// <exception cref="Aditi.Scheduler.SchedulerException"></exception>
         public Guid CreateTask(TaskModel task)
         {
-            var request = CreateWebApiRequest("/api/task");
+            var request = CreateWebApiRequest(SchedulerConstants.TaskRelativePath);
             request.Method = HttpMethod.Post.Method;
 
             string json = JsonConvert.SerializeObject(task);
@@ -325,7 +329,7 @@ namespace Aditi.Scheduler
         /// <exception cref="Aditi.Scheduler.SchedulerException"></exception>
         public Guid UpdateTask(TaskModel task)
         {
-            var request = CreateWebApiRequest("/api/task/" + task.Id.ToString());
+            var request = CreateWebApiRequest(SchedulerConstants.TaskRelativePath + task.Id.ToString());
             request.Method = HttpMethod.Put.Method;
 
             string json = JsonConvert.SerializeObject(task);
@@ -392,7 +396,7 @@ namespace Aditi.Scheduler
         /// <exception cref="Aditi.Scheduler.SchedulerException"></exception>
         public Guid DeleteTask(Guid taskId)
         {
-            var request = CreateWebApiRequest("/api/task" + taskId.ToString("N"));
+            var request = CreateWebApiRequest(SchedulerConstants.TaskRelativePath + taskId.ToString("N"));
             request.Method = HttpMethod.Delete.Method;
 
             HttpWebResponse response = GetResponse(request);
@@ -427,7 +431,7 @@ namespace Aditi.Scheduler
         public async Task<OperationStatus> GetOperationStatusAsync(Guid operationId, bool blocked = false)
         {
             OperationStatus operationStatus = null;
-            var statusUrl = "/api/Status/" + operationId.ToString();
+            var statusUrl = SchedulerConstants.StatusRelativePath + operationId.ToString();
 
             var statusWebRequest = CreateWebApiRequest(statusUrl);
             statusWebRequest.Method = HttpMethod.Get.Method;
@@ -459,7 +463,7 @@ namespace Aditi.Scheduler
         public OperationStatus GetOperationStatus(Guid operationId, bool blocked = false)
         {
             OperationStatus operationStatus = null;
-            var statusUrl = "/api/Status/" + operationId.ToString();
+            var statusUrl = SchedulerConstants.StatusRelativePath + operationId.ToString();
 
             var statusWebRequest = CreateWebApiRequest(statusUrl);
             statusWebRequest.Method = HttpMethod.Get.Method;
@@ -491,7 +495,7 @@ namespace Aditi.Scheduler
         public WebhookAuditResult GetTaskHistory(Guid taskId, string token = null)
         {
             WebhookAuditResult historyResult;
-            string historyUrl = "/api/task/" + taskId.ToString() + "/History/";
+            string historyUrl = SchedulerConstants.TaskRelativePath + taskId.ToString() + SchedulerConstants.HistoryRelativePath;
             var historyWebRequest = CreateWebApiRequest(historyUrl);
             historyWebRequest.Method = HttpMethod.Get.Method;
 
@@ -514,8 +518,8 @@ namespace Aditi.Scheduler
         public async Task<WebhookAuditResult> GetTaskHistoryAsync(string taskId, string token = null)
         {
             WebhookAuditResult historyResult;
-            
-            string historyUrl = string.Concat(SchedulerConstants.SchedulerTaskUri, taskId, "/History/");
+
+            string historyUrl = string.Concat(SchedulerConstants.SchedulerTaskUri, taskId, SchedulerConstants.HistoryRelativePath);
             
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add(
