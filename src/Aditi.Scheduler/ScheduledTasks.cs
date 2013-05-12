@@ -12,6 +12,7 @@ using System.Web;
 using Aditi.Scheduler.Models;
 using Aditi.SignatureAuth;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using ServiceStack.Text;
 
 
@@ -266,7 +267,7 @@ namespace Aditi.Scheduler
             var request = CreateWebApiRequest(SchedulerConstants.TaskRelativePath);
             request.Method = HttpMethod.Post.Method;
 
-            string json = JsonConvert.SerializeObject(task);
+            string json = JsonConvert.SerializeObject(task, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd hh:mm:ss" });
 
             try
             {
@@ -284,6 +285,7 @@ namespace Aditi.Scheduler
             {
                 throw CreateSchedulerException(we);
             }
+           
 
             //TODO: Is there any scenario code block will reach this?
             return Guid.Empty;
@@ -332,7 +334,7 @@ namespace Aditi.Scheduler
             var request = CreateWebApiRequest(SchedulerConstants.TaskRelativePath + task.Id.ToString());
             request.Method = HttpMethod.Put.Method;
 
-            string json = JsonConvert.SerializeObject(task);
+            string json = JsonConvert.SerializeObject(task, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd hh:mm:ss" });
 
             try
             {
