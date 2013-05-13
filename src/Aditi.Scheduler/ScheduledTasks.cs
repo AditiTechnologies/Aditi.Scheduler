@@ -26,6 +26,7 @@ namespace Aditi.Scheduler
         public const string TaskRelativePath = "/api/task/";
         public const string StatusRelativePath = "/api/Status/";
         public const string HistoryRelativePath = "/History/";
+        public const string IsoDateFormat = "yyyy-MM-dd HH:mm:ss";
 
         //TODO: Change this to production URL when deploying? Can this be taken from any configuration file. 
         //for local 
@@ -267,7 +268,7 @@ namespace Aditi.Scheduler
             var request = CreateWebApiRequest(SchedulerConstants.TaskRelativePath);
             request.Method = HttpMethod.Post.Method;
 
-            string json = JsonConvert.SerializeObject(task, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd hh:mm:ss" });
+            string json = JsonConvert.SerializeObject(task, new IsoDateTimeConverter() { DateTimeFormat = SchedulerConstants.IsoDateFormat });
 
             try
             {
@@ -334,7 +335,7 @@ namespace Aditi.Scheduler
             var request = CreateWebApiRequest(SchedulerConstants.TaskRelativePath + task.Id.ToString());
             request.Method = HttpMethod.Put.Method;
 
-            string json = JsonConvert.SerializeObject(task, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd hh:mm:ss" });
+            string json = JsonConvert.SerializeObject(task, new IsoDateTimeConverter() { DateTimeFormat = SchedulerConstants.IsoDateFormat });
 
             try
             {
