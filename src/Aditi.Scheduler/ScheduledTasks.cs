@@ -12,6 +12,7 @@ using System.Web;
 using Aditi.Scheduler.Models;
 using Aditi.SignatureAuth;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using ServiceStack.Text;
 
 
@@ -25,6 +26,7 @@ namespace Aditi.Scheduler
         public const string TaskRelativePath = "/api/task/";
         public const string StatusRelativePath = "/api/Status/";
         public const string HistoryRelativePath = "/History/";
+        public const string IsoDateFormat = "yyyy-MM-dd HH:mm:ss";
 
         //TODO: Change this to production URL when deploying? Can this be taken from any configuration file. 
         //for local 
@@ -266,7 +268,7 @@ namespace Aditi.Scheduler
             var request = CreateWebApiRequest(SchedulerConstants.TaskRelativePath);
             request.Method = HttpMethod.Post.Method;
 
-            string json = JsonConvert.SerializeObject(task);
+            string json = JsonConvert.SerializeObject(task, new IsoDateTimeConverter() { DateTimeFormat = SchedulerConstants.IsoDateFormat });
 
             try
             {
@@ -284,6 +286,7 @@ namespace Aditi.Scheduler
             {
                 throw CreateSchedulerException(we);
             }
+           
 
             //TODO: Is there any scenario code block will reach this?
             return Guid.Empty;
@@ -332,7 +335,7 @@ namespace Aditi.Scheduler
             var request = CreateWebApiRequest(SchedulerConstants.TaskRelativePath + task.Id.ToString());
             request.Method = HttpMethod.Put.Method;
 
-            string json = JsonConvert.SerializeObject(task);
+            string json = JsonConvert.SerializeObject(task, new IsoDateTimeConverter() { DateTimeFormat = SchedulerConstants.IsoDateFormat });
 
             try
             {
