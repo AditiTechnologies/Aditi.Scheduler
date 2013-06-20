@@ -40,12 +40,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AuthType.cs" />
+    <Compile Include="AzureQueueParamBuilder.cs" />
+    <Compile Include="ContentType.cs" />
+    <Compile Include="HttpVerb.cs" />
+    <Compile Include="IParamBuilder.cs" />
+    <Compile Include="ParamBuilderConstants.cs" />
+    <Compile Include="ParamFactory.cs" />
     <Compile Include="WebhookAudit.cs" />
     <Compile Include="WebhookAuditResult.cs" />
     <Compile Include="JobType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaskModel.cs" />
     <Compile Include="OperationStatus.cs" />
+    <Compile Include="WebHookParamBuilder.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
