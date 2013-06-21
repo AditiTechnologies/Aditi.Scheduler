@@ -28,7 +28,6 @@ namespace Aditi.Scheduler
         public const string HistoryRelativePath = "/History/";
         public const string IsoDateFormat = "yyyy-MM-dd HH:mm:ss";
 
-        //TODO: Change this to production URL when deploying? Can this be taken from any configuration file. 
         //for local 
 #if !(DEBUG_BUILD || RELEASE_BUILD)
         public const string SchedulerTaskUri = "http://127.0.0.2/";

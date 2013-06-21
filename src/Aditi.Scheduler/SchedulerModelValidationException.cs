@@ -49,7 +49,7 @@ namespace Aditi.Scheduler
             //Json Error ModelState {"task.Start":["Time must be in the future"],"task.End":["Time must be in the future"],
             //"task.CronExpression":["Cron expression is invalid"]}
             errors = JsonObject.Parse(jsonModelErrors);
-            ModelValidationErrors =  ((System.Collections.Generic.Dictionary<string, string>) errors);
+            ModelValidationErrors =  ((Dictionary<string, string>) errors);
         }
 
         
