@@ -14,10 +14,10 @@ namespace Aditi.Scheduler.Models
         public const string Password = "password";
 
 
-        public const string AccountName = "accountname";
-        public const string QueueName = "queuename";
-        public const string SasToken = "sastoken";
-        public const string QueueMessage = "queuemessage";
+        public const string AccountName = "accountName";
+        public const string QueueName = "queueName";
+        public const string SasToken = "sasToken";
+        public const string QueueMessage = "queueMessage";
         public const string IsBinary = "isBinary";
     }
 }
