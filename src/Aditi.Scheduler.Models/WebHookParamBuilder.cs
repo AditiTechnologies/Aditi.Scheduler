@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Aditi.Scheduler.Models
 {
@@ -14,43 +12,39 @@ namespace Aditi.Scheduler.Models
         {
             _params = new Dictionary<string, object>
                 {
-                    {ParamBuilderConstants.Url, url}
+                    {TaskParamKeys.Url, url}
                 };
             
         }
 
-        public WebHookParamBuilder Verb(HttpVerb verb)
-        {
-            _params.Add(ParamBuilderConstants.Verb, Enum.GetName(typeof(HttpVerb), verb));
-            return this;
-        }
         public WebHookParamBuilder ValidateSsl(bool validateSsl)
         {
-            _params.Add(ParamBuilderConstants.ValidateSsl, validateSsl);
+            _params[TaskParamKeys.ValidateSsl] =  validateSsl;
             return this;
         }
         public WebHookParamBuilder Auth(string userName, string password)
         {
             var authParam = new Dictionary<string,string>
                 {
-                   {ParamBuilderConstants.Type, Enum.GetName(typeof(AuthType), AuthType.Basic)},
-                   {ParamBuilderConstants.UserName, userName},
-                   {ParamBuilderConstants.Password, password}
+                   {TaskParamKeys.Type, "basic"},
+                   {TaskParamKeys.UserName, userName},
+                   {TaskParamKeys.Password, password}
                 };
 
-            _params.Add(ParamBuilderConstants.Auth, authParam);
+            _params[TaskParamKeys.Auth] = authParam;
             
             return this;
         }
-        public WebHookParamBuilder Content(ContentType type, string data)
+        public WebHookParamBuilder Post(ContentType type, string data)
         {
+            _params[TaskParamKeys.Verb] = "POST";
               var contentParam = new Dictionary<string,string>
                 {
-                   {ParamBuilderConstants.DataType, Enum.GetName(typeof(ContentType), type).ToLower()},
-                   {ParamBuilderConstants.Data, data},
+                   {TaskParamKeys.DataType, type.ToString().ToLower()},
+                   {TaskParamKeys.Data, data},
                 };
 
-            _params.Add(ParamBuilderConstants.Content, contentParam);
+            _params[TaskParamKeys.Content] = contentParam;
             return this;
         }
        

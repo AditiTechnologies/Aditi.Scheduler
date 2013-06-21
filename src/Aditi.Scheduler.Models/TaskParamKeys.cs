@@ -1,6 +1,6 @@
 namespace Aditi.Scheduler.Models
 {
-    public static class ParamBuilderConstants
+    public static class TaskParamKeys
     {
         public const string Url = "url";
         public const string ValidateSsl = "validateSsl";

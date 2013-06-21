@@ -40,13 +40,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AuthType.cs" />
     <Compile Include="AzureQueueParamBuilder.cs" />
     <Compile Include="ContentType.cs" />
-    <Compile Include="HttpVerb.cs" />
     <Compile Include="IParamBuilder.cs" />
-    <Compile Include="ParamBuilderConstants.cs" />
-    <Compile Include="ParamFactory.cs" />
+    <Compile Include="TaskParamKeys.cs" />
+    <Compile Include="ParamBuilderFactory.cs" />
     <Compile Include="WebhookAudit.cs" />
     <Compile Include="WebhookAuditResult.cs" />
     <Compile Include="JobType.cs" />
