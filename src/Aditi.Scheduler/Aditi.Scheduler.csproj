@@ -32,8 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Aditi.SignatureAuth">
-      <HintPath>..\packages\Aditi.SignatureAuth.0.0.1.2\lib\Aditi.SignatureAuth.dll</HintPath>
+    <Reference Include="Aditi.SignatureAuth, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\SchedulerAPI\externals\Aditi.SignatureAuth\src\Aditi.SignatureAuth\bin\Aditi.SignatureAuth.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
