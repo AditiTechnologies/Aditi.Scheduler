@@ -45,23 +45,23 @@ namespace Aditi.Scheduler
     public class ScheduledTasks
     {
         private readonly Uri _uri;
-        private readonly string _tenantId;
+        private readonly string _subscriptionId;
         private readonly string _secretKey;
         
         private const int MaxRetryCount = 5;
 
-        public ScheduledTasks(Uri uri, string tenantId, string secretKey)
+        public ScheduledTasks(Uri uri, string subscriptionId, string secretKey)
         {
             this._uri = uri;
-            this._tenantId = tenantId;
+            this._subscriptionId = subscriptionId;
             this._secretKey = secretKey;
         
         }
 
-        public ScheduledTasks(string tenantId, string secretKey)
+        public ScheduledTasks(string subscriptionId, string secretKey)
         {
             this._uri = new Uri(SchedulerConstants.SchedulerTaskUri);
-            this._tenantId = tenantId;
+            this._subscriptionId = subscriptionId;
             this._secretKey = secretKey;
         
         }
@@ -71,7 +71,7 @@ namespace Aditi.Scheduler
             var request = (HttpWebRequest)WebRequest.Create(new Uri(_uri, relativeUri));
             request.ContentType = SchedulerConstants.RequestJsonContentType;
             request.Headers.Add("Authorization",
-                                new Signature(this._tenantId, this._secretKey).ToString());
+                                new Signature(this._subscriptionId, this._secretKey).ToString());
             HttpRequestCachePolicy noCachePolicy = new HttpRequestCachePolicy(HttpRequestCacheLevel.NoCacheNoStore);
             request.CachePolicy = noCachePolicy;
             return request;
@@ -82,7 +82,7 @@ namespace Aditi.Scheduler
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add(
                 "Authorization",
-                new Signature(this._tenantId, this._secretKey).ToString());
+                new Signature(this._subscriptionId, this._secretKey).ToString());
             client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
             return client;
@@ -224,7 +224,7 @@ namespace Aditi.Scheduler
 
             client.DefaultRequestHeaders.Add(
                 "Authorization",
-                new Signature(this._tenantId, this._secretKey).ToString());
+                new Signature(this._subscriptionId, this._secretKey).ToString());
 
             var response = await client.GetAsync(_uri);
 
@@ -254,7 +254,7 @@ namespace Aditi.Scheduler
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add(
                 "Authorization",
-                new Signature(this._tenantId, this._secretKey).ToString());
+                new Signature(this._subscriptionId, this._secretKey).ToString());
             var response = await client.GetAsync(_uri + taskId.ToString());
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsAsync<TaskModel>();
@@ -412,7 +412,7 @@ namespace Aditi.Scheduler
 
             client.DefaultRequestHeaders.Add(
                 "Authorization",
-                new Signature(this._tenantId, this._secretKey).ToString());
+                new Signature(this._subscriptionId, this._secretKey).ToString());
 
             var response = client.DeleteAsync(_uri + taskId.ToString()).Result;
 
@@ -526,7 +526,7 @@ namespace Aditi.Scheduler
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add(
                 "Authorization",
-                new Signature(this._tenantId, this._secretKey).ToString());
+                new Signature(this._subscriptionId, this._secretKey).ToString());
             var response = await client.GetAsync(historyUrl);
 
             response.EnsureSuccessStatusCode();
