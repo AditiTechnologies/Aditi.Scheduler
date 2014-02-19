@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AzureQueueParamBuilder.cs" />
+    <Compile Include="CommonCronExpressions.cs" />
     <Compile Include="ContentType.cs" />
     <Compile Include="IParamBuilder.cs" />
     <Compile Include="TaskParamKeys.cs" />

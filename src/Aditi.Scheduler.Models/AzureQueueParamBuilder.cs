@@ -20,12 +20,12 @@ namespace Aditi.Scheduler.Models
         }
         public AzureQueueParamBuilder QueueMessage(string queueMessage)
         {
-            _params.Add(TaskParamKeys.QueueMessage, queueMessage);
+            _params[TaskParamKeys.QueueMessage] = queueMessage;
             return this;
         }
         public AzureQueueParamBuilder IsBinary(bool isBinary)
         {
-            _params.Add(TaskParamKeys.IsBinary, isBinary);
+            _params[TaskParamKeys.IsBinary] = isBinary;
             return this;
         }
         public Dictionary<string, object> Build()
