@@ -7,7 +7,7 @@ namespace Aditi.Scheduler.Models
         public string Id { get; set; }
         public int HttpStatusCode { get; set; }
         public string Response { get; set; }
-        public Guid TenantId { get; set; }
+        public Guid SubscriptionId { get; set; }
         public double ExecutionTimeMs { get; set; }
         public string Method { get; set; }
         public string Url { get; set; }
