@@ -33,7 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Aditi.SignatureAuth">
-      <HintPath>..\packages\Aditi.SignatureAuth.0.0.1.2\lib\Aditi.SignatureAuth.dll</HintPath>
+      <HintPath>..\packages\Aditi.SignatureAuth.1.0.1\lib\net40\Aditi.SignatureAuth.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
