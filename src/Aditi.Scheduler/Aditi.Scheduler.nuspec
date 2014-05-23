@@ -16,7 +16,7 @@
     <tags>Aditi Scheduler client </tags>
   </metadata>
   <files>
-    <file src="..\**\*.cs" target="src" />
-    <file src="bin\$configuration$\*.pdb" target="lib" />
+    <file src="..\Aditi.Scheduler**\*.cs" target="src" />
+    <file src="bin\$configuration$\*.pdb" target="lib\net45" />
   </files>
 </package>
