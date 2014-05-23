@@ -63,6 +63,7 @@
     <Compile Include="SchedulerException.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Aditi.Scheduler.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +71,9 @@
       <Project>{21444757-3d70-45fc-a948-279ad079e470}</Project>
       <Name>Aditi.Scheduler.Models</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="version.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

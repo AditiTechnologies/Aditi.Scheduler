@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://raw.github.com/AditiTechnologies/Aditi.Scheduler/master/LICENSE.txt</licenseUrl>
+    <projectUrl>https://github.com/AditiTechnologies/Aditi.Scheduler</projectUrl>
+    <iconUrl>https://raw.github.com/AditiTechnologies/Aditi.Scheduler/master/packaging/AditiLogo.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>$release$</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>Aditi Scheduler client </tags>
+  </metadata>
+  <files>
+    <file src="..\**\*.cs" target="src" />
+    <file src="bin\$configuration$\*.pdb" target="lib" />
+  </files>
+</package>
